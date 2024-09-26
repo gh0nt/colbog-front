@@ -49,16 +49,30 @@ const ColegioPagination = ({ itemsPerPage, totalItems, paginate, currentPage }) 
     generatePages();
 
     return (
-        <div className="pagination">
-            <span onClick={() => currentPage > 1 && paginate(currentPage - 1)} disabled={currentPage === 1}>&lt;</span>
+        <div className="flex justify-center items-center mt-4 space-x-2">
+            <span
+                onClick={() => currentPage > 1 && paginate(currentPage - 1)}
+                className={`px-3 py-1 cursor-pointer rounded ${currentPage === 1 ? 'text-gray-400' : 'text-blue-500 hover:bg-blue-100'}`}
+            >
+                &lt;
+            </span>
 
             {pageNumbers.map(number => (
-                <span key={number} onClick={() => paginate(number)} className={currentPage === number ? 'active' : ''}>
+                <span
+                    key={number}
+                    onClick={() => paginate(number)}
+                    className={`px-3 py-1 cursor-pointer rounded ${currentPage === number ? 'bg-blue-500 text-white' : 'text-blue-500 hover:bg-blue-100'}`}
+                >
                     {number}
                 </span>
             ))}
 
-            <span onClick={() => currentPage < totalPages && paginate(currentPage + 1)} disabled={currentPage === totalPages}>&gt;</span>
+            <span
+                onClick={() => currentPage < totalPages && paginate(currentPage + 1)}
+                className={`px-3 py-1 cursor-pointer rounded ${currentPage === totalPages ? 'text-gray-400' : 'text-blue-500 hover:bg-blue-100'}`}
+            >
+                &gt;
+            </span>
 
             <input
                 type="number"
@@ -67,6 +81,7 @@ const ColegioPagination = ({ itemsPerPage, totalItems, paginate, currentPage }) 
                 onBlur={handleInputBlur}
                 min="1"
                 max={totalPages}
+                className="ml-4 w-12 text-center border rounded"
             />
         </div>
     );

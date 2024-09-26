@@ -9,7 +9,6 @@ const ColegioList = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [itemsPerPage] = useState(10);
-    const [editingId, setEditingId] = useState(null);
     const [newColegio, setNewColegio] = useState({
         id: 1,
         nombreEstablecimiento: "",
@@ -40,22 +39,16 @@ const ColegioList = () => {
             .catch(error => console.error('Error fetching data: ', error));
     }, []);
 
+    //Calcular el índice de los colegios para mostrar en la página actual
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentItems = useMemo(() => {
-        return Array.isArray(colegio) ? colegio.slice(indexOfFirstItem, indexOfLastItem) : [];
-    }, [colegio, indexOfFirstItem, indexOfLastItem]);
+    const currentColegios = colegio.slice(indexOfFirstItem, indexOfLastItem);
 
-    const paginate = pageNumber => setCurrentPage(pageNumber);
+    //Cambia a la página actual
+    const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
-
-    const handleEditClick = (id) => {
-        setEditingId(id);
-    };
-
-
 
 
     const handleAddClick = async () => {
@@ -87,69 +80,12 @@ const ColegioList = () => {
         }
     };
 
-    const modalStyle = {
-        content: {
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-            alignItems: 'center',
-            top: '50%',
-            left: '50%',
-            right: 'auto',
-            bottom: 'auto',
-            transform: 'translate(-50%, -50%)',
-            padding: '20px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-            backgroundColor: 'white',
-            width: '80%',
-            maxHeight: '80vh',
-            overflowY: 'auto',
-        },
-        overlay: {
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        },
-    };
-
-    const labelStyle = {
-        marginBottom: '8px',
-        marginRight: '8px',
-        width: '180px', // Ajusta el ancho según tus necesidades
-    };
-
-    const inputStyle = {
-        flex: '1',
-        padding: '10px',
-        boxSizing: 'border-box',
-        border: '1px solid #ccc',
-        borderRadius: '4px',
-        marginBottom: '12px',
-    };
-
-    const submitButtonStyle = {
-        backgroundColor: '#4CAF50',
-        color: 'white',
-        padding: '10px',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-    };
-
-    const cancelButtonStyle = {
-        backgroundColor: '#f44336',
-        color: 'white',
-        padding: '10px',
-        border: 'none',
-        borderRadius: '4px',
-        cursor: 'pointer',
-    };
-
     return (
-        <div className="container mx-auto p-4">
+        <div className="px-4 md:px-6">
             <h1 className='text-2xl font-bold mb-4'>Listado de Colegios</h1>
             <button onClick={openModal}>Añadir Nuevo Colegio</button>
-            <div className="table-container">
-                <table className='table-auto w-full text-left border-collapse'>
+            <div className="overflow-x-auto mx-auto">
+                <table className='table-auto border-collapse w-full'>
                     <thead>
                         <tr>
                             <th className='border px-4 py-2'>ID</th>
@@ -172,11 +108,11 @@ const ColegioList = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {colegio.length > 0 ? (
-                            colegio.map((item, index) => (
+                        {currentColegios.length > 0 ? (
+                            currentColegios.map((item, index) => (
                                 <tr key={index} className="hover:bg-gray-100">
                                     <td className="border px-4 py-2">{item.id}</td>
-                                    <td className="border px-4 py-2">{item.nombre}</td>
+                                    <td className="border px-4 py-2">{item.nombreEstablecimiento}</td>
                                     <td className="border px-4 py-2">{item.ubicacion}</td>
                                     <td className="border px-4 py-2">{item.direccion}</td>
                                     <td className="border px-4 py-2">{item.telefono}</td>
@@ -185,13 +121,13 @@ const ColegioList = () => {
                                     <td className="border px-4 py-2">{item.jornadas}</td>
                                     <td className="border px-4 py-2">{item.especialidad}</td>
                                     <td className="border px-4 py-2">{item.modelo}</td>
-                                    <td className="border px-4 py-2">{item.capacidades}</td>
+                                    <td className="border px-4 py-2">{item.capacidadesExcepcionales}</td>
                                     <td className="border px-4 py-2">{item.discapacidades}</td>
                                     <td className="border px-4 py-2">{item.idiomas}</td>
-                                    <td className="border px-4 py-2">{item.prestador}</td>
-                                    <td className="border px-4 py-2">{item.propiedad}</td>
+                                    <td className="border px-4 py-2">{item.prestadorDeServicio}</td>
+                                    <td className="border px-4 py-2">{item.propiedadPlantaFisica}</td>
                                     <td className="border px-4 py-2">{item.calendario}</td>
-                                    <td className="border px-4 py-2">{item.correo}</td>
+                                    <td className="border px-4 py-2">{item.correoElectronico}</td>
                                 </tr>
                             ))
                         ) : (
@@ -208,130 +144,128 @@ const ColegioList = () => {
                 paginate={paginate}
                 currentPage={currentPage}
             />
-            <Modal isOpen={isModalOpen} onRequestClose={closeModal} style={modalStyle}>
+            <Modal isOpen={isModalOpen} onRequestClose={closeModal} >
                 <form>
 
 
-                    <label style={labelStyle}>Nombre del colegio:</label>
+                    <label >Nombre del colegio:</label>
                     <input
-                        style={inputStyle}
                         type="text"
                         value={newColegio.nombrecolegio}
                         onChange={(e) => setNewColegio({ ...newColegio, nombreInmueble: e.target.value })}
                     />
-                    <label style={labelStyle}>Zona:</label>
+                    <label >Zona:</label>
                     <input
-                        style={inputStyle}
                         type="text"
                         value={newColegio.tipoInmueble}
                         onChange={(e) => setNewColegio({ ...newColegio, tipoInmueble: e.target.value })}
                     />
 
-                    <label style={labelStyle}>Dirección:</label>
+                    <label >Dirección:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="text"
                         value={newColegio.ciudad}
                         onChange={(e) => setNewColegio({ ...newColegio, ciudad: e.target.value })}
                     />
-                    <label style={labelStyle}>Telefono:</label>
+                    <label >Telefono:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="text"
                         value={newColegio.departamento}
                         onChange={(e) => setNewColegio({ ...newColegio, departamento: e.target.value })}
                     />
 
-                    <label style={labelStyle}>Tipo de Establecimiento:</label>
+                    <label >Tipo de Establecimiento:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="text"
                         value={newColegio.direccion}
                         onChange={(e) => setNewColegio({ ...newColegio, direccion: e.target.value })}
                     />
 
-                    <label style={labelStyle}>Niveles:</label>
+                    <label >Niveles:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="number"
                         value={newColegio.estrato}
                         onChange={(e) => setNewColegio({ ...newColegio, estrato: parseInt(e.target.value) })}
                     />
 
-                    <label style={labelStyle}>Jornadas:</label>
+                    <label >Jornadas:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="number"
                         value={newColegio.valorArriendo}
                         onChange={(e) => setNewColegio({ ...newColegio, valorArriendo: parseFloat(e.target.value) })}
                     />
 
-                    <label style={labelStyle}>Especialidad:</label>
+                    <label >Especialidad:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="number"
                         value={newColegio.areaTerreno}
                         onChange={(e) => setNewColegio({ ...newColegio, areaTerreno: parseFloat(e.target.value) })}
                     />
 
-                    <label style={labelStyle}>Modelo Educativo:</label>
+                    <label >Modelo Educativo:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="number"
                         value={newColegio.areaConstruida}
                         onChange={(e) => setNewColegio({ ...newColegio, areaConstruida: parseFloat(e.target.value) })}
                     />
 
-                    <label style={labelStyle}>Capacidades Excepcionales:</label>
+                    <label >Capacidades Excepcionales:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="checkbox"
                         checked={newColegio.iva}
                         onChange={(e) => setNewColegio({ ...newColegio, iva: e.target.checked })}
                     />
 
-                    <label style={labelStyle}>Discapacidades:</label>
+                    <label >Discapacidades:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="text"
                         value={newColegio.nombreContacto}
                         onChange={(e) => setNewColegio({ ...newColegio, nombreContacto: e.target.value })}
                     />
 
-                    <label style={labelStyle}>Idiomas:</label>
+                    <label >Idiomas:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="text"
                         value={newColegio.celularContacto}
                         onChange={(e) => setNewColegio({ ...newColegio, celularContacto: e.target.value })}
                     />
 
-                    <label style={labelStyle}>Prestador del Servicio:</label>
+                    <label >Prestador del Servicio:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="text"
                         value={newColegio.telefonoContacto}
                         onChange={(e) => setNewColegio({ ...newColegio, telefonoContacto: e.target.value })}
                     />
 
-                    <label style={labelStyle}>Calendario:</label>
+                    <label >Calendario:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="text"
                         value={newColegio.direccionContacto}
                         onChange={(e) => setNewColegio({ ...newColegio, direccionContacto: e.target.value })}
                     />
 
-                    <label style={labelStyle}>Correo de Contacto:</label>
+                    <label >Correo de Contacto:</label>
                     <input
-                        style={inputStyle}
+                        
                         type="text"
                         value={newColegio.correoContacto}
                         onChange={(e) => setNewColegio({ ...newColegio, correoContacto: e.target.value })}
                     />
 
-                    <button style={submitButtonStyle} type="button" onClick={handleAddClick}>Añadir Nuevo Inmueble</button>
-                    <button style={cancelButtonStyle} type="button" onClick={closeModal}>Cancelar</button>
+                    <button  type="button" onClick={handleAddClick}>Añadir Nuevo Inmueble</button>
+                    <button type="button" onClick={closeModal}>Cancelar</button>
                 </form>
 
             </Modal>
