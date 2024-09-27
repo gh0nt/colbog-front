@@ -2,14 +2,17 @@ import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import Modal from 'react-modal';
 import Pagination from './ColegioPagination';
+import SearchFilterAdmin from './SearchFilterAdmin';
 
 
 const ColegioList = () => {
     const [colegio, setColegio] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [filteredColegios, setFilteredColegios] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [itemsPerPage] = useState(10);
-    const [newColegio, setNewColegio] = useState({
+    const [itemsPerPage] = useState(10); //Estados para la paginación
+    const [searchTerm, setSearchTerm] = useState(''); //Estado para filtrar datos
+    const [newColegio, setNewColegio] = useState({ //Estado para crear un dato
         id: 1,
         nombreEstablecimiento: "",
         zona: "",
@@ -34,7 +37,8 @@ const ColegioList = () => {
         axios.get('http://localhost:8081/api/v1/colegios/find-all') //el endpoint axios.get('https://localhost:8081/swagger-ui/index.html')
             .then(response => {
                 const colegioData = Array.isArray(response.data) ? response.data : [];
-                setColegio(colegioData)
+                setColegio(colegioData);
+                setFilteredColegios(colegioData); // Muestra todos los datos
             })
             .catch(error => console.error('Error fetching data: ', error));
     }, []);
@@ -49,6 +53,26 @@ const ColegioList = () => {
 
     const openModal = () => setIsModalOpen(true);
     const closeModal = () => setIsModalOpen(false);
+
+    //Recibe el SearchFilterAdmin.js
+    const handleSearch = (filters) => {
+        const { nombreEstablecimiento, zona, niveles, jornadas, especialidad, idiomas, calendario } = filters;
+
+        const filtered = colegio.filter((colegio) => {
+            const matchesSearchTerm = colegio.nombreEstablecimiento?.toLowerCase().includes(searchTerm.toLowerCase());
+            const matchesNombreEstablecimiento = nombreEstablecimiento ? colegio.nombreEstablecimiento === colegio : true;
+            const matchesZona = zona ? colegio.zona === zona : true;
+            const matchesNiveles = niveles ? colegio.niveles === niveles : true;
+            const matchesJornadas = niveles ? colegio.jornadas === jornadas : true;
+            const matchesEspecialidad = especialidad ? colegio.especialidad === especialidad : true;
+            const matchesIdiomas = idiomas ? colegio.idiomas === idiomas : true;
+            const matchesCalendario = calendario ? colegio.calendario === calendario : true;
+
+            return matchesSearchTerm && matchesZona && matchesNiveles && matchesJornadas && matchesEspecialidad && matchesIdiomas && matchesCalendario;
+        });
+        setFilteredColegios(filtered);
+        setCurrentPage(1);
+    };
 
 
     const handleAddClick = async () => {
@@ -80,9 +104,14 @@ const ColegioList = () => {
         }
     };
 
+
+
     return (
         <div className="px-4 md:px-6">
             <h1 className='text-2xl font-bold mb-4'>Listado de Colegios</h1>
+            {/* Componente de Búsqueda */}
+            <SearchFilterAdmin onSearch={handleSearch} />
+
             <button onClick={openModal}>Añadir Nuevo Colegio</button>
             <div className="overflow-x-auto mx-auto">
                 <table className='table-auto border-collapse w-full'>
@@ -140,11 +169,11 @@ const ColegioList = () => {
             </div>
             <Pagination
                 itemsPerPage={itemsPerPage}
-                totalItems={colegio.length}
+                totalItems={filteredColegios.length}
                 paginate={paginate}
                 currentPage={currentPage}
             />
-            <Modal isOpen={isModalOpen} onRequestClose={closeModal} >
+            {/* <Modal isOpen={isModalOpen} onRequestClose={closeModal} >
                 <form>
 
 
@@ -163,14 +192,14 @@ const ColegioList = () => {
 
                     <label >Dirección:</label>
                     <input
-                        
+
                         type="text"
                         value={newColegio.ciudad}
                         onChange={(e) => setNewColegio({ ...newColegio, ciudad: e.target.value })}
                     />
                     <label >Telefono:</label>
                     <input
-                        
+
                         type="text"
                         value={newColegio.departamento}
                         onChange={(e) => setNewColegio({ ...newColegio, departamento: e.target.value })}
@@ -178,7 +207,7 @@ const ColegioList = () => {
 
                     <label >Tipo de Establecimiento:</label>
                     <input
-                        
+
                         type="text"
                         value={newColegio.direccion}
                         onChange={(e) => setNewColegio({ ...newColegio, direccion: e.target.value })}
@@ -186,7 +215,7 @@ const ColegioList = () => {
 
                     <label >Niveles:</label>
                     <input
-                        
+
                         type="number"
                         value={newColegio.estrato}
                         onChange={(e) => setNewColegio({ ...newColegio, estrato: parseInt(e.target.value) })}
@@ -194,7 +223,7 @@ const ColegioList = () => {
 
                     <label >Jornadas:</label>
                     <input
-                        
+
                         type="number"
                         value={newColegio.valorArriendo}
                         onChange={(e) => setNewColegio({ ...newColegio, valorArriendo: parseFloat(e.target.value) })}
@@ -202,7 +231,7 @@ const ColegioList = () => {
 
                     <label >Especialidad:</label>
                     <input
-                        
+
                         type="number"
                         value={newColegio.areaTerreno}
                         onChange={(e) => setNewColegio({ ...newColegio, areaTerreno: parseFloat(e.target.value) })}
@@ -210,7 +239,7 @@ const ColegioList = () => {
 
                     <label >Modelo Educativo:</label>
                     <input
-                        
+
                         type="number"
                         value={newColegio.areaConstruida}
                         onChange={(e) => setNewColegio({ ...newColegio, areaConstruida: parseFloat(e.target.value) })}
@@ -218,7 +247,7 @@ const ColegioList = () => {
 
                     <label >Capacidades Excepcionales:</label>
                     <input
-                        
+
                         type="checkbox"
                         checked={newColegio.iva}
                         onChange={(e) => setNewColegio({ ...newColegio, iva: e.target.checked })}
@@ -226,7 +255,7 @@ const ColegioList = () => {
 
                     <label >Discapacidades:</label>
                     <input
-                        
+
                         type="text"
                         value={newColegio.nombreContacto}
                         onChange={(e) => setNewColegio({ ...newColegio, nombreContacto: e.target.value })}
@@ -234,7 +263,7 @@ const ColegioList = () => {
 
                     <label >Idiomas:</label>
                     <input
-                        
+
                         type="text"
                         value={newColegio.celularContacto}
                         onChange={(e) => setNewColegio({ ...newColegio, celularContacto: e.target.value })}
@@ -242,7 +271,7 @@ const ColegioList = () => {
 
                     <label >Prestador del Servicio:</label>
                     <input
-                        
+
                         type="text"
                         value={newColegio.telefonoContacto}
                         onChange={(e) => setNewColegio({ ...newColegio, telefonoContacto: e.target.value })}
@@ -250,7 +279,7 @@ const ColegioList = () => {
 
                     <label >Calendario:</label>
                     <input
-                        
+
                         type="text"
                         value={newColegio.direccionContacto}
                         onChange={(e) => setNewColegio({ ...newColegio, direccionContacto: e.target.value })}
@@ -258,17 +287,17 @@ const ColegioList = () => {
 
                     <label >Correo de Contacto:</label>
                     <input
-                        
+
                         type="text"
                         value={newColegio.correoContacto}
                         onChange={(e) => setNewColegio({ ...newColegio, correoContacto: e.target.value })}
                     />
 
-                    <button  type="button" onClick={handleAddClick}>Añadir Nuevo Inmueble</button>
+                    <button type="button" onClick={handleAddClick}>Añadir Nuevo Inmueble</button>
                     <button type="button" onClick={closeModal}>Cancelar</button>
                 </form>
 
-            </Modal>
+            </Modal> */}
         </div>
     );
 };
