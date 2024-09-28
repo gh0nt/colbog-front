@@ -348,14 +348,9 @@ const SearchFilterAdmin = ({ onSearch }) => {
                     onClick={handleSearch}
                     className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded"
                 >
-                    Buscar
-                </button>
-                <button
-                    onClick={handleFilter}
-                    className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded"
-                >
                     Filtrar
                 </button>
+                
             </div>
         </div>
     );
