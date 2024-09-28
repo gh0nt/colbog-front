@@ -75,34 +75,7 @@ const ColegioList = () => {
     };
 
 
-    const handleAddClick = async () => {
-        try {
-            const response = await axios.post('http://localhost:8081/api/v1/colegios/find-all', newColegio);
-            setColegio([...colegio, response.data]);
-            setNewColegio({
-                id: 1,
-                nombreEstablecimiento: "",
-                zona: "",
-                direccion: "",
-                telefono: "",
-                tipoEstablecimiento: "",
-                niveles: "",
-                jornadas: "",
-                especialidad: null,
-                modelosEducativos: "",
-                capacidadesExcepcionales: null,
-                discapacidades: null,
-                idiomas: "",
-                prestadorDeServicio: "",
-                propiedadPlantaFisica: "",
-                calendario: "",
-                correoElectronico: ""
-            });
-            closeModal();
-        } catch (error) {
-            console.error('Error adding colegio: ', error);
-        }
-    };
+
 
 
 
