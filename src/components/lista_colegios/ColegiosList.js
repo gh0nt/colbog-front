@@ -1,18 +1,19 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Modal from 'react-modal';
 import Pagination from './ColegioPagination';
 import SearchFilterAdmin from './SearchFilterAdmin';
 
-
 const ColegioList = () => {
     const [colegio, setColegio] = useState([]);
-    const [currentPage, setCurrentPage] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
     const [filteredColegios, setFilteredColegios] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [itemsPerPage] = useState(10); //Estados para la paginación
-    const [searchTerm, setSearchTerm] = useState(''); //Estado para filtrar datos
-    const [newColegio, setNewColegio] = useState({ //Estado para crear un dato
+    const [itemsPerPage] = useState(10);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isEditing, setIsEditing] = useState(false);
+    const [currentColegioId, setCurrentColegioId] = useState(null);
+    const [newColegio, setNewColegio] = useState({
         id: 1,
         nombreEstablecimiento: "",
         zona: "",
@@ -33,12 +34,15 @@ const ColegioList = () => {
     });
 
     useEffect(() => {
+        fetchColegios();
+    }, []);
 
-        axios.get('http://localhost:8081/api/v1/colegios/find-all') //el endpoint axios.get('https://localhost:8081/swagger-ui/index.html')
+    const fetchColegios = () => {
+        axios.get('http://localhost:8081/api/v1/colegios/find-all')
             .then(response => {
                 const colegioData = Array.isArray(response.data) ? response.data : [];
                 setColegio(colegioData);
-                setFilteredColegios(colegioData); // Muestra todos los datos
+                setFilteredColegios(colegioData);
             })
             .catch(error => console.error('Error fetching data: ', error));
     }, []);
@@ -284,22 +288,26 @@ const ColegioList = () => {
                         value={newColegio.direccionContacto}
                         onChange={(e) => setNewColegio({ ...newColegio, direccionContacto: e.target.value })}
                     />
-
-                    <label >Correo de Contacto:</label>
+                    <label className="block mb-2">Correo Electrónico:</label>
                     <input
-
                         type="text"
-                        value={newColegio.correoContacto}
-                        onChange={(e) => setNewColegio({ ...newColegio, correoContacto: e.target.value })}
+                        value={newColegio.correoElectronico}
+                        onChange={(e) => setNewColegio({ ...newColegio, correoElectronico: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
                     />
-
-                    <button type="button" onClick={handleAddClick}>Añadir Nuevo Inmueble</button>
-                    <button type="button" onClick={closeModal}>Cancelar</button>
+                    <div className="flex justify-end gap-4">
+                        <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded">
+                            {isEditing ? 'Actualizar' : 'Añadir'}
+                        </button>
+                        <button type="button" onClick={closeModal} className="bg-red-500 text-white px-4 py-2 rounded">
+                            Cancelar
+                        </button>
+                    </div>
                 </form>
-
-            </Modal> */}
+            </Modal>
         </div>
     );
 };
 
 export default ColegioList;
+
