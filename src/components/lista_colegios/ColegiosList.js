@@ -45,39 +45,69 @@ const ColegioList = () => {
                 setFilteredColegios(colegioData);
             })
             .catch(error => console.error('Error fetching data: ', error));
-    }, []);
+    };
 
-    //Calcular el índice de los colegios para mostrar en la página actual
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-    const currentColegios = colegio.slice(indexOfFirstItem, indexOfLastItem);
+    const currentColegios = filteredColegios.slice(indexOfFirstItem, indexOfLastItem);
 
-    //Cambia a la página actual
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    const openModal = () => setIsModalOpen(true);
-    const closeModal = () => setIsModalOpen(false);
+    const openModal = () => {
+        setIsModalOpen(true);
+        setIsEditing(false);
+    };
 
-    //Recibe el SearchFilterAdmin.js
+    const closeModal = () => {
+        setIsModalOpen(false);
+        setNewColegio({
+            id: 1,
+            nombreEstablecimiento: "",
+            zona: "",
+            direccion: "",
+            telefono: "",
+            tipoEstablecimiento: "",
+            niveles: "",
+            jornadas: "",
+            especialidad: null,
+            modelosEducativos: "",
+            capacidadesExcepcionales: null,
+            discapacidades: null,
+            idiomas: "",
+            prestadorDeServicio: "",
+            propiedadPlantaFisica: "",
+            calendario: "",
+            correoElectronico: ""
+        });
+        setCurrentColegioId(null);
+    };
+
     const handleSearch = (filters) => {
         const { nombreEstablecimiento, zona, niveles, jornadas, especialidad, idiomas, calendario } = filters;
 
         const filtered = colegio.filter((colegio) => {
             const matchesSearchTerm = colegio.nombreEstablecimiento?.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesNombreEstablecimiento = nombreEstablecimiento ? colegio.nombreEstablecimiento === colegio : true;
+            const matchesNombreEstablecimiento = nombreEstablecimiento ? colegio.nombreEstablecimiento === nombreEstablecimiento : true;
             const matchesZona = zona ? colegio.zona === zona : true;
             const matchesNiveles = niveles ? colegio.niveles === niveles : true;
-            const matchesJornadas = niveles ? colegio.jornadas === jornadas : true;
+            const matchesJornadas = jornadas ? colegio.jornadas === jornadas : true;
             const matchesEspecialidad = especialidad ? colegio.especialidad === especialidad : true;
             const matchesIdiomas = idiomas ? colegio.idiomas === idiomas : true;
             const matchesCalendario = calendario ? colegio.calendario === calendario : true;
 
-            return matchesSearchTerm && matchesZona && matchesNiveles && matchesJornadas && matchesEspecialidad && matchesIdiomas && matchesCalendario;
+            return matchesSearchTerm && matchesNombreEstablecimiento && matchesZona && matchesNiveles &&
+                matchesJornadas && matchesEspecialidad && matchesIdiomas && matchesCalendario;
         });
         setFilteredColegios(filtered);
         setCurrentPage(1);
     };
 
+    const handleEdit = (colegio) => {
+        setIsEditing(true);
+        setNewColegio(colegio);
+        setCurrentColegioId(colegio.id);
+        setIsModalOpen(true);
+    };
 
     const handleAddClick = async () => {
         try {
@@ -111,16 +141,19 @@ const ColegioList = () => {
 
 
     return (
-        <div className="px-4 md:px-6">
-            <h1 className='text-2xl font-bold mb-4'>Listado de Colegios</h1>
-            {/* Componente de Búsqueda */}
-            <SearchFilterAdmin onSearch={handleSearch} />
+        <div className="container mx-auto px-4 md:px-6">
+            <h1 className='text-3xl font-bold mb-6 text-center'>Listado de Colegios</h1>
 
-            <button onClick={openModal}>Añadir Nuevo Colegio</button>
-            <div className="overflow-x-auto mx-auto">
-                <table className='table-auto border-collapse w-full'>
+            <div className="flex justify-between mb-4">
+                <SearchFilterAdmin onSearch={handleSearch} />
+                <button className="bg-blue-500 text-white px-2 py-2 rounded" onClick={openModal}>Añadir Colegio</button>
+            </div>
+
+            <div className="overflow-x-auto">
+                <table className='table-auto w-full border-collapse'>
                     <thead>
-                        <tr>
+                        <tr className='bg-gray-100'>
+                            <th className='border px-4 py-2'>Acciones</th>
                             <th className='border px-4 py-2'>ID</th>
                             <th className='border px-4 py-2'>Nombre Establecimiento</th>
                             <th className='border px-4 py-2'>Zona</th>
@@ -135,7 +168,7 @@ const ColegioList = () => {
                             <th className='border px-4 py-2'>Discapacidades</th>
                             <th className='border px-4 py-2'>Idiomas</th>
                             <th className='border px-4 py-2'>Prestador de Servicio</th>
-                            <th className='border px-4 py-2'>propiedadPlantaFisica</th>
+                            <th className='border px-4 py-2'>Propiedad Planta Física</th>
                             <th className='border px-4 py-2'>Calendario</th>
                             <th className='border px-4 py-2'>Correo electrónico</th>
                         </tr>
@@ -144,16 +177,30 @@ const ColegioList = () => {
                         {currentColegios.length > 0 ? (
                             currentColegios.map((item, index) => (
                                 <tr key={index} className="hover:bg-gray-100">
+                                    <td className="border px-4 py-2 flex justify-center gap-2">
+                                        <button
+                                            className="bg-yellow-500 text-white px-2 py-1 rounded"
+                                            onClick={() => handleEdit(item)}
+                                        >
+                                            Editar
+                                        </button>
+                                        <button
+                                            className="bg-red-500 text-white px-2 py-1 rounded"
+                                            onClick={() => handleDelete(item.id)}
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </td>
                                     <td className="border px-4 py-2">{item.id}</td>
                                     <td className="border px-4 py-2">{item.nombreEstablecimiento}</td>
-                                    <td className="border px-4 py-2">{item.ubicacion}</td>
+                                    <td className="border px-4 py-2">{item.zona}</td>
                                     <td className="border px-4 py-2">{item.direccion}</td>
                                     <td className="border px-4 py-2">{item.telefono}</td>
-                                    <td className="border px-4 py-2">{item.tipo}</td>
+                                    <td className="border px-4 py-2">{item.tipoEstablecimiento}</td>
                                     <td className="border px-4 py-2">{item.niveles}</td>
                                     <td className="border px-4 py-2">{item.jornadas}</td>
                                     <td className="border px-4 py-2">{item.especialidad}</td>
-                                    <td className="border px-4 py-2">{item.modelo}</td>
+                                    <td className="border px-4 py-2">{item.modelosEducativos}</td>
                                     <td className="border px-4 py-2">{item.capacidadesExcepcionales}</td>
                                     <td className="border px-4 py-2">{item.discapacidades}</td>
                                     <td className="border px-4 py-2">{item.idiomas}</td>
@@ -165,7 +212,7 @@ const ColegioList = () => {
                             ))
                         ) : (
                             <tr>
-                                <td colSpan="3" className="text-center py-4">No hay datos disponibles</td>
+                                <td colSpan="18" className="text-center py-4">No hay datos disponibles</td>
                             </tr>
                         )}
                     </tbody>
@@ -177,116 +224,114 @@ const ColegioList = () => {
                 paginate={paginate}
                 currentPage={currentPage}
             />
-            {/* <Modal isOpen={isModalOpen} onRequestClose={closeModal} >
-                <form>
 
-
-                    <label >Nombre del colegio:</label>
+            <Modal isOpen={isModalOpen} onRequestClose={closeModal} ariaHideApp={false}>
+                <h2 className="text-xl font-bold mb-4">{isEditing ? 'Editar Colegio' : 'Añadir Nuevo Colegio'}</h2>
+                <form onSubmit={handleFormSubmit}>
+                    <label className="block mb-2">Nombre del colegio:</label>
                     <input
                         type="text"
-                        value={newColegio.nombrecolegio}
-                        onChange={(e) => setNewColegio({ ...newColegio, nombreInmueble: e.target.value })}
+                        value={newColegio.nombreEstablecimiento}
+                        onChange={(e) => setNewColegio({ ...newColegio, nombreEstablecimiento: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
                     />
-                    <label >Zona:</label>
+                    <label className="block mb-2">Zona:</label>
                     <input
                         type="text"
-                        value={newColegio.tipoInmueble}
-                        onChange={(e) => setNewColegio({ ...newColegio, tipoInmueble: e.target.value })}
+                        value={newColegio.zona}
+                        onChange={(e) => setNewColegio({ ...newColegio, zona: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
                     />
-
-                    <label >Dirección:</label>
+                    <label className="block mb-2">Dirección:</label>
                     <input
-
-                        type="text"
-                        value={newColegio.ciudad}
-                        onChange={(e) => setNewColegio({ ...newColegio, ciudad: e.target.value })}
-                    />
-                    <label >Telefono:</label>
-                    <input
-
-                        type="text"
-                        value={newColegio.departamento}
-                        onChange={(e) => setNewColegio({ ...newColegio, departamento: e.target.value })}
-                    />
-
-                    <label >Tipo de Establecimiento:</label>
-                    <input
-
                         type="text"
                         value={newColegio.direccion}
                         onChange={(e) => setNewColegio({ ...newColegio, direccion: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
                     />
-
-                    <label >Niveles:</label>
+                    <label className="block mb-2">Teléfono:</label>
                     <input
-
-                        type="number"
-                        value={newColegio.estrato}
-                        onChange={(e) => setNewColegio({ ...newColegio, estrato: parseInt(e.target.value) })}
-                    />
-
-                    <label >Jornadas:</label>
-                    <input
-
-                        type="number"
-                        value={newColegio.valorArriendo}
-                        onChange={(e) => setNewColegio({ ...newColegio, valorArriendo: parseFloat(e.target.value) })}
-                    />
-
-                    <label >Especialidad:</label>
-                    <input
-
-                        type="number"
-                        value={newColegio.areaTerreno}
-                        onChange={(e) => setNewColegio({ ...newColegio, areaTerreno: parseFloat(e.target.value) })}
-                    />
-
-                    <label >Modelo Educativo:</label>
-                    <input
-
-                        type="number"
-                        value={newColegio.areaConstruida}
-                        onChange={(e) => setNewColegio({ ...newColegio, areaConstruida: parseFloat(e.target.value) })}
-                    />
-
-                    <label >Capacidades Excepcionales:</label>
-                    <input
-
-                        type="checkbox"
-                        checked={newColegio.iva}
-                        onChange={(e) => setNewColegio({ ...newColegio, iva: e.target.checked })}
-                    />
-
-                    <label >Discapacidades:</label>
-                    <input
-
                         type="text"
-                        value={newColegio.nombreContacto}
-                        onChange={(e) => setNewColegio({ ...newColegio, nombreContacto: e.target.value })}
+                        value={newColegio.telefono}
+                        onChange={(e) => setNewColegio({ ...newColegio, telefono: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
                     />
-
-                    <label >Idiomas:</label>
+                    <label className="block mb-2">Tipo de Establecimiento:</label>
                     <input
-
                         type="text"
-                        value={newColegio.celularContacto}
-                        onChange={(e) => setNewColegio({ ...newColegio, celularContacto: e.target.value })}
+                        value={newColegio.tipoEstablecimiento}
+                        onChange={(e) => setNewColegio({ ...newColegio, tipoEstablecimiento: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
                     />
-
-                    <label >Prestador del Servicio:</label>
+                    <label className="block mb-2">Niveles:</label>
                     <input
-
                         type="text"
-                        value={newColegio.telefonoContacto}
-                        onChange={(e) => setNewColegio({ ...newColegio, telefonoContacto: e.target.value })}
+                        value={newColegio.niveles}
+                        onChange={(e) => setNewColegio({ ...newColegio, niveles: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
                     />
-
-                    <label >Calendario:</label>
+                    <label className="block mb-2">Jornadas:</label>
                     <input
-
                         type="text"
-                        value={newColegio.direccionContacto}
-                        onChange={(e) => setNewColegio({ ...newColegio, direccionContacto: e.target.value })}
+                        value={newColegio.jornadas}
+                        onChange={(e) => setNewColegio({ ...newColegio, jornadas: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
+                    />
+                    <label className="block mb-2">Especialidad:</label>
+                    <input
+                        type="text"
+                        value={newColegio.especialidad}
+                        onChange={(e) => setNewColegio({ ...newColegio, especialidad: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
+                    />
+                    <label className="block mb-2">Modelo Educativo:</label>
+                    <input
+                        type="text"
+                        value={newColegio.modelosEducativos}
+                        onChange={(e) => setNewColegio({ ...newColegio, modelosEducativos: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
+                    />
+                    <label className="block mb-2">Capacidades Excepcionales:</label>
+                    <input
+                        type="text"
+                        value={newColegio.capacidadesExcepcionales}
+                        onChange={(e) => setNewColegio({ ...newColegio, capacidadesExcepcionales: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
+                    />
+                    <label className="block mb-2">Discapacidades:</label>
+                    <input
+                        type="text"
+                        value={newColegio.discapacidades}
+                        onChange={(e) => setNewColegio({ ...newColegio, discapacidades: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
+                    />
+                    <label className="block mb-2">Idiomas:</label>
+                    <input
+                        type="text"
+                        value={newColegio.idiomas}
+                        onChange={(e) => setNewColegio({ ...newColegio, idiomas: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
+                    />
+                    <label className="block mb-2">Prestador del Servicio:</label>
+                    <input
+                        type="text"
+                        value={newColegio.prestadorDeServicio}
+                        onChange={(e) => setNewColegio({ ...newColegio, prestadorDeServicio: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
+                    />
+                    <label className="block mb-2">Propiedad Planta Física:</label>
+                    <input
+                        type="text"
+                        value={newColegio.propiedadPlantaFisica}
+                        onChange={(e) => setNewColegio({ ...newColegio, propiedadPlantaFisica: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
+                    />
+                    <label className="block mb-2">Calendario:</label>
+                    <input
+                        type="text"
+                        value={newColegio.calendario}
+                        onChange={(e) => setNewColegio({ ...newColegio, calendario: e.target.value })}
+                        className="border rounded px-2 py-1 mb-4 w-full"
                     />
                     <label className="block mb-2">Correo Electrónico:</label>
                     <input
